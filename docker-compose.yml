@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  # MySQL Database Service
+  db:
+    image: mysql:8.0
+    container_name: ssis_mysql_db
+    restart: always
+    environment:
+      MYSQL_DATABASE: ssisdb
+      MYSQL_ROOT_PASSWORD: your_secure_root_password
+    ports:
+      - "3306:3306"
+    volumes:
+      # Automatically executes your SQL script on startup to initialize tables
+      - ./db_script/script.sql:/docker-entrypoint-initdb.d/script.sql
+      - mysql_data:/var/lib/mysql
+
+  # Flask Web Application Service
+  web:
+    build: .
+    container_name: ssis_web_app
+    restart: always
+    ports:
+      - "8080:8080"
+    environment:
+      - FLASK_APP=ssis
+      - FLASK_ENV=development
+      - DB_HOST=db
+      - DB_NAME=ssisdb
+      - DB_USERNAME=root
+      - DB_PASSWORD=your_secure_root_password
+      - SECRET_KEY=any_string_will_do
+      - CLOUD_NAME=your_cloudinary_name
+      - API_KEY=your_cloudinary_api_key
+      - API_SECRET=your_cloudinary_api_secretkey
+      - PHOTO_UPLOAD=cloud
+    depends_on:
+      - db
+
+volumes:
+  mysql_data:
